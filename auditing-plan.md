@@ -1,4 +1,4 @@
-# MEHANIZAM REVIZIJE (AUDITING)
+# MEHANIZAM REVIZIJE (AUDITING) - Vuk Vićentić SV45/2022
 
 ## 1) Logovi moraju biti korisni
 - Strukturisani logovi: **JSON**
