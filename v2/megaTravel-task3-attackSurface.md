@@ -35,7 +35,7 @@ Korisnici sa sistemom komuniciraju kroz interfejse/kanale gde svaki od tih kanal
 
 Ulazne tačke u ove kanale su login forme, forme za rezervaciju, stranica za pretragu, upload dokumenata(pogotovo identifikacionih dokumenata), upravljanje sesijom...
 
-**Zaposleni** koriste ekosistem aplikacija posebno namenjenih za upotrebu unutar kompanije. Kako bi se ograničio i osigurao pristup internoj mreži, ulazne tačke zaposlenih u sistem su **VPN**, **SSO**, **hardverski ključevi**.
+**Zaposleni** koriste ekosistem aplikacija posebno namenjenih za upotrebu unutar kompanije. Kako bi se ograničio i osigurao pristup internoj mreži, ulazne tačke zaposlenih u sistem su **korporativni portal/interna mreža** koji su zaštićeni pomoću **VPN-a** ili **hardverskih ključeva**.
 
 **Administratori** koriste panele i aplikacije koji sadrže poverljive informacije i prava na privilegovane operacije. Ulazne tačke u ovakav komunikacioni kanal su **hardverski ključevi**, **SSH** i **RD protokol**.
 
@@ -68,6 +68,6 @@ U ovu kategoriju napadne površine spadaju sve potencijalne ulazne tačke kojima
 
 U ovu kategoriju napadne površine spadaju sve potencijalne ulazne tačke prouzrokovane ljudskim nemarom. U ovu kategoriju se mogu svrstati:
 
-- (*zaposleni, administrator*) **Deljenje informacija koje ne bi trebalo da dele**
-- (*zaposleni, administrator*) **Preuzimanje softvera koji ne bi trebalo da preuzimaju**
-- (*zaposleni, administrator*) **Posećivanje veb sajtova koje ne bi trebalo da posećuju**
+- (*klijenti, zaposleni, administrator*) **Deljenje informacija koje ne bi trebalo da dele**
+- (*klijenti, zaposleni, administrator*) **Preuzimanje softvera koji ne bi trebalo da preuzimaju**
+- (*klijenti, zaposleni, administrator*) **Posećivanje veb sajtova koje ne bi trebalo da posećuju**
