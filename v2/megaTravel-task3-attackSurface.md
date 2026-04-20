@@ -45,11 +45,29 @@ Ulazne tačke u ove kanale su login forme, forme za rezervaciju, stranica za pre
 
 ## Mapiranje površine napada
 
-Ulazne tačke se mogu grupisati na osnovu kategorije napadne površine. Podelićemo ih u 3 grupe, digitalna napadna površina, fizička napadna površina i napadna površina društvenog inženjeringa.
+Ulazne tačke se mogu grupisati na osnovu kategorije napadne površine. Podelićemo ih u 3 grupe, **digitalna napadna površina**, **fizička napadna površina** i **napadna površina društvenog inženjeringa**.
 
 ### Digitalna napadna površina
 
 U ovu kategoriju napadne površine spadaju sve potencijalne ulazne tačke kojima napadač može pristupiti pomoću internet veze. U ovu kategoriju se mogu svrstati:
 
 - (*klijent, zaposleni, administratori*) **Autentifikacioni mehanizmi** - Login forme, VPN portal, SSH ključevi. Ranjivost ove ulazne tačke može biti slaba lozinka/ključ koji se mogu probiti brute force napadom.
-- ()
+- (*administratori*) **Imovina izložena internetu** - Greške u implementaciji, konfiguraciji, nezaštićeni API endpointi, injekcija, loše podešen firewall, loše podešeni servisi 3. lica.
+- (*administratori*) **Zastareli softver** - Starije verzije softvera mogu sadržati javno poznate ranjivosti.
+- (*zaposleni*) **Shadow IT** - Digitalni uređaji/softver koji zaposleni koriste za obavljanje posla bez prethodnog odobrenja od strane IT osoblja.
+
+### Fizička napadna površina
+
+U ovu kategoriju napadne površine spadaju sve potencijalne ulazne tačke kojima napadač može pristupiti uz autorizovani pristup fizičkoj imovini sistema.
+
+- (*zaposleni, administratori*) **Maliciozna interni korisnik** - Nezadovoljan ili podmićen zaposleni može iskorisiti svoja prava prisutpa da našteti sistemu.
+- (*zaposleni, administratori*) **Krađa uređaja** - Ukoliko napadač ukrade, bilo koji "krajni" uređaj, ili pristupi prostorijama u kojima se nalazi infrastruktura sistema, moguć mu je pristup poverljivim podacima sistema. Napadač može ukrasti identitet uređaja kako bi pristupio ostalim resursima sistema. U krajnje uređaje spadaju računari zaposlenih koji rade na daljinu, lični uređaji zaposlenih, hardverski ključevi, nepropisno odloženi uređaji i sl.
+- (*zaposleni, administratori*) **Mamljenje** - Napadač podmeće fleš memorije ili slične uređaje sa malicioznim softverom u nadi da će korisnik sa privilegovanim pristupom povezati uređaj sa krajnjim uređajem.
+
+### Napadna površina društvenog inženjeringa
+
+U ovu kategoriju napadne površine spadaju sve potencijalne ulazne tačke prouzrokovane ljudskim nemarom. U ovu kategoriju se mogu svrstati:
+
+- (*zaposleni, administrator*) **Deljenje informacija koje ne bi trebalo da dele**
+- (*zaposleni, administrator*) **Preuzimanje softvera koji ne bi trebalo da preuzimaju**
+- (*zaposleni, administrator*) **Posećivanje veb sajtova koje ne bi trebalo da posećuju**
