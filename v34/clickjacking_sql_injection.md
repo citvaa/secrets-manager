@@ -1,6 +1,6 @@
 # Analiza odbrane - SQL Injection i Clickjacking
 # Milos Milosavljevic SV80/2022
-# Za Clickajcking su uradjena 3 zelena i 2 plava laba, ali za aql injection 1 zeleni i 4 plava sto daje 4 zelena i 6 plavih labova
+# Za Clickajcking su uradjena 3 zelena i 2 plava laba, ali za sql injection 1 zeleni i 4 plava sto daje 4 zelena i 6 plavih labova
 ---
 
 ## 1. SQL Injection
