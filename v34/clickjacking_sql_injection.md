@@ -168,9 +168,39 @@ SELECT * FROM users WHERE username = 'administrator'--' AND password = 'test123'
 ```
 Sve iza `--` je komentar, pa se provera lozinke preskače. Aplikacija pronađe korisnika `administrator` i prijavi ga bez provere lozinke.
 
+![View exploit stranica](images/sql_form.png)
+
+
 **Plavi (Practitioner):**
 
-2. **SQL injection attack, querying the database type and version on MySQL and Microsoft** - REŠENO
+2. **SQL injection attack, querying the database type and version on Oracle** - REŠENO
+
+**Opis:** Web shop ima filter po kategorijama proizvoda koji je ranjiv na SQL injection u `category` URL parametru. Cilj je izvući verziju Oracle baze podataka kroz UNION napad.
+
+**Ranjivost:** Aplikacija direktno ugrađuje vrednost `category` parametra u SQL upit bez sanitizacije. UNION napad omogućava dodavanje dodatnog SELECT upita koji vraća podatke iz druge tabele.
+
+**Rešenje:**
+
+Payload unesen direktno u URL:
+```
+https://0a92003a033812c480174929006e004d.web-security-academy.net/filter?category='+UNION+SELECT+BANNER,+NULL+FROM+v$version--
+```
+
+SQL upit koji aplikacija izvršava postaje:
+```sql
+SELECT * FROM products WHERE category = '' UNION SELECT BANNER, NULL FROM v$version--'
+```
+
+`v$version` je Oracle sistemska tabela koja sadrži informacije o verziji baze. Rezultat na stranici:
+- `CORE 11.2.0.2.0 Production`
+- `NLSRTL Version 11.2.0.2.0 - Production`
+- `Oracle Database 11g Express Edition Release 11.2.0.2.0 - 64bit Production`
+- `PL/SQL Release 11.2.0.2.0 - Production`
+- `TNS for Linux: Version 11.2.0.2.0 - Production`
+
+**Napomena:** Na Oracle bazama svaki SELECT mora imati FROM, pa se koristi ili `FROM dual` za literal vrednosti ili sistemske tabele poput `v$version`. Komentar je `--` kao i na ostalim bazama.
+
+3. **SQL injection attack, querying the database type and version on MySQL and Microsoft** - REŠENO
 
 **Opis:** Isti tip napada kao prethodni lab — UNION napad kroz `category` parametar, ali sada na MySQL/Microsoft bazi. Cilj je prikazati verziju baze.
 
@@ -200,7 +230,7 @@ SELECT * FROM products WHERE category = '' UNION SELECT @@version, NULL-- '
 
 **Napomena:** `#` se ne sme koristiti direktno u URL-u jer ga browser interpretira kao fragment stranice i ne šalje serveru. Umesto toga koristi `--+` ili URL-enkodiranu verziju `%23`.
 
-3. **SQL injection attack, listing the database contents on non-Oracle databases** - REŠENO
+4. **SQL injection attack, listing the database contents on non-Oracle databases** - REŠENO
 
 **Opis:** Kompleksniji UNION napad — cilj je pronaći naziv tabele i kolona koje sadrže kredencijale korisnika, izvući lozinku administratora i ulogovati se. Nazivi tabela i kolona su nasumično generisani pa se moraju otkriti kroz `information_schema`.
 
@@ -231,11 +261,11 @@ Pronađene kolone: `username_ieaitb` i `password_uuifsz`
 https://0a010015036dd04c845100f200d3005c.web-security-academy.net/filter?category=%27+UNION+SELECT+username_ieaitb,+password_uuifsz+FROM+users_brcswn--
 ```
 Na stranici se pojavljuju korisnici sa lozinkama. Pronađena lozinka za `administrator` i korišćena za login kroz "My account".
-![View exploit stranica](sql_injection_attack.png)
+![View exploit stranica](images/sql_injection_attack.png)
 
 *Screenshot prikazuje pristup bazi podataka sa prikazanim username i lozinkama
 
-4. **SQL injection attack, listing the database contents on Oracle** - REŠENO
+5. **SQL injection attack, listing the database contents on Oracle** - REŠENO
 
 **Opis:** Identičan prethodnom labu ali na Oracle bazi. Razlika je u sintaksi — Oracle koristi `all_tables` i `all_tab_columns` umesto `information_schema`, i svaki SELECT mora imati `FROM`.
 
@@ -318,6 +348,8 @@ Iframe učitava `/my-account` stranicu žrtve sa `opacity: 0.0001` (praktično n
 
 **Napomena:** Iframe prikazuje login stranicu kada napadač testira exploit jer napadač nema sesiju žrtve. To je normalno — žrtva ima svoju aktivnu sesiju i njen browser će ispravno učitati `/my-account`. Exploit se isporučuje žrtvi kroz "Deliver exploit to victim" bez testiranja iframea.
 
+**Zeleni (Apprentice):**
+
 2. **Clickjacking with form input data prefilled from a URL parameter** - REŠENO
 
 **Opis:** Ovaj lab proširuje osnovni clickjacking napad. Cilj nije brisanje naloga već promena email adrese žrtve. Aplikacija dozvoljava prepopulaciju email polja kroz URL parametar `?email=`, što napadač koristi da unapred popuni formu sa svojom email adresom pre nego što žrtva klikne.
@@ -351,7 +383,7 @@ URL parametar `?email=hacker@attacker.com` automatski popunjava email polje u fo
 
 **Napomena:** Email adresa u URL-u ne sme biti ista kao email adresa bilo kog postojećeg korisnika, jer aplikacija to odbija.
 
-**Plavi (Practitioner):**
+**Zeleni (Apprentice):**
 
 3. **Clickjacking with a frame buster script** - REŠENO
 
@@ -386,6 +418,8 @@ Jedina razlika u odnosu na prethodni lab je `sandbox="allow-forms"` atribut na i
 
 **Napomena:** Email mora biti drugačiji od emaila korišćenog u prethodnim labovima jer aplikacija ne dozvoljava registraciju već zauzetog emaila.
 
+**Plavi (Practitioner):**
+
 4. **Exploiting clickjacking vulnerability to trigger DOM-based XSS** - REŠENO
 
 
@@ -419,9 +453,11 @@ URL parametar `?name=<img src=1 onerror=print()>` ubacuje XSS payload u polje za
 
 **Razlika u odnosu na prethodne labove:** Ovde se može testirati exploit na sebi jer nema opasnosti od brisanja naloga ili promene email adrese — klik na "Test me" otvara print dijalog kao potvrda da exploit radi.
 
-![View exploit stranica](DOM_based_XSS.png)
+![View exploit stranica](images/DOM_based_XSS.png)
 
 *Screenshot prikazuje poluvidljivi iframe sa feedback formom i "Click me" element pozicioniran tačno iznad "Submit feedback" dugmeta.*
+
+**Plavi (Practitioner):**
 
 5. **Multistep clickjacking** - REŠENO
 
