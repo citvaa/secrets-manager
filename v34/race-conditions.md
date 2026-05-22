@@ -36,7 +36,11 @@ Vremenski okvir u kojem je moguća kolizija naziva se "prozor trke" (eng. *race 
 
 Cilj ovog zadatka je kupiti proizvod za koji nemamo sredstava. Napadaču su dati kredencijali za prijavu na web shop na nalog koji ima 50$ za trošenje u prodavnici, i promo kod za 20% popusta sa porudžbine. Proizvod koji treba kupiti košta 1337$, što je mnogo više nego što nalog ima.
 
-Hajde da analiziramo kako izgleda kupovina nekog proizvoda i primena promo koda.
+Hajde da analiziramo kako izgleda kupovina nekog proizvoda i primena promo koda; Kada se proizvod dodaje u korpu, šalje se `POST` zahtev na `/cart` endpoint sa šifrom proizvoda. Kada se primenjuje promo kod, šalje se `POST` zahtev na `/cart/coupon`. Ako ponovo pokušamo da primenimo isti kupon, dobijamo poruku `Coupon already applied`. Uz svaki zahtev se šalje token sesije. Ako pokušamo da dobavimo proizvode iz korpe gađanjem `/cart` endpointa sa `GET` bez tokena sesije, dobijamo praznu korpu. Ovo naznačuje da se podaci o sesiji čuvaju na serverskoj strani.
+
+Potencijalna kolizija postoji pri obradi zahteva, kada server dobavlja podatke o sesiji i proverava validnost sesije. Pokušaćemo da iskoristimo slabost pri obradi zahteva za primenu promo koda. Možda, server prvo primeni promo kod, pa tek onda proverava validnost sesije, tj. da li je promo kod već primenjen.
+
+Da bi ovo proverili, prvo dodajemo proizvod koji želimo da kupimo u korpu. Kada je proizvod u korpi, šaljemo zahtev za primenu promo koda u Burp Repeater. Pravi se duplikat tog zahteva, 20 duplikata bi trebalo da je dovoljno. Zahtevi se grupišu, i grupa zahteva se šalje u paraleli. Nakon što se svi zahtevi izvrše, vidimo da je svaki uspešno izvršen. Refreshom stranice sa korpom vidimo da je promo kod više puta primenjen, nakon čega možemo kupiti proizvod. Zadatak je rešen.
 
 ## Zadatak 2 - plavi:
 
@@ -115,4 +119,55 @@ def handleResponse(req, interesting):
     table.add(req)
 ```
 
-Nakon što pokrenemo skriptu na dugme `Attack`, slanje zahteva se izvršava i dobijamo tabelu sa rezultatima izvršavanja HTTP zahteva. Tabelu sortiramo po statusnom kodu odgovora, i tražimo status 302. Analizom zahteva sa statusom 302 pronalazimo lozinku, nakon čega se preko web interfejsa prijavljujemo na administratorski nalog i brišemo administratorskog korisnika.
+Nakon što pokrenemo skriptu na dugme `Attack`, slanje zahteva se izvršava i dobijamo tabelu sa rezultatima izvršavanja HTTP zahteva. Tabelu sortiramo po statusnom kodu odgovora, i tražimo status 302. Analizom zahteva sa statusom 302 pronalazimo lozinku, nakon čega se preko web interfejsa prijavljujemo na administratorski nalog i brišemo administratorskog korisnika. Zadatak je rešen.
+
+## Zadatak 3 - Plavi
+
+### *Multi-endpoint race conditions*
+
+
+Cilj ovog zadatka je iskoristiti trku uslova u toku kupovine kako bi se kupio proizvod po nenamerenoj ceni. Napadaču su dati kredencijali za nalog na web shopu čiji saldo nije dovoljan za kupovinu željenog proizvoda.
+
+Prijavljujemo se na nalog i kupujemo poklon karticu kako bi analizirali tok kupovine. Iz analize HTTP saobraćaja identifikujemo sve endpointe za interakciju sa korpom: `POST /cart` dodaje proizvod u korpu, a `POST /cart/checkout` predaje porudžbinu.
+
+Dodajemo još jednu poklon karticu u korpu i šaljemo `GET /cart` zahtev u Burp Repeater. Slanjem tog zahteva sa i bez kolačića sesije potvrđujemo da bez kolačića sesije dobijamo praznu korpu - stanje korpe se čuva na serverskoj strani i vezano je za sesiju korisnika. Ovo ukazuje na potencijalnu koliziju.
+
+Primetimo i da se predaja i potvrda uspešne porudžbine odvijaju u jednom ciklusu zahtev/odgovor. Postoji potencijalni prozor trke između trenutka kada server proverava da li korisnik ima dovoljno sredstava i trenutka kada se porudžbina potvrđuje - moguće je dodati proizvod u korpu nakon što je provera već izvršena.
+
+Da bi procenili uticaj mrežne arhitekture na napad, šaljemo `POST /cart` i `POST /cart/checkout` u Repeater i dodajemo ih u istu grupu. Slanjem oba zahteva sekvencijalno kroz jednu konekciju, primećujemo da prvi zahtev konzistentno traje znatno duže od drugog. Dodavanjem `GET` zahteva za početnu stranicu na čelo grupe i ponovnim slanjem sva tri zahteva sekvencijalno, primećujemo da "zagrevanje" konekcije na ovaj način drastično smanjuje vremensku razliku između drugog i trećeg zahteva. Zaključujemo da kašnjenje potiče od mrežne arhitekture bekenda, a ne od vremena obrade samih endpointa, i da neće ometati napad. `GET` zahtev za početnu stranicu zatim uklanjamo iz grupe.
+
+Za dokazivanje koncepta, u korpu stavljamo jednu poklon karticu. U Repeateru menjamo `POST /cart` zahtev tako da parametar `productId` odgovara šifri skupog proizvoda koji želimo da kupimo. Slanjem zahteva sekvencijalno dobijamo odgovor da nemamo dovoljno sredstava, što je očekivano.
+
+Uklanjamo skup proizvod iz korpe i dodajemo novu poklon karticu. Sada šaljemo oba zahteva (`POST /cart` sa skupim proizvodom i `POST /cart/checkout`) paralelno. Ako dobijemo odgovor o nedovoljnim sredstvima, uklanjamo proizvod i ponavljamo napad. Napad može zahtevati više pokušaja. Nakon uspešnog pokušaja, `POST /cart/checkout` vraća status `200` i proizvod je uspešno kupljen. Zadatak je rešen.
+
+## Zadatak 4 - Plavi
+
+### *Single-endpoint race conditions*
+
+Cilj ovog zadatka je iskoristiti trku uslova u funkciji promene email adrese kako bi se preuzela email adresa drugog korisnika i nasledila administratorska prava.
+
+Prijavljujemo se na nalog i pokušavamo da promenimo email adresu na neku adresu kojoj imamo pristup. Primećujemo da se na novu adresu šalje email sa potvrdom koji sadrži jedinstveni token, a da je promena validna tek nakon klika na link u emailu. Ako pošaljemo dva zahteva za promenu email adrese na različite adrese, i potom pokušamo da iskoristimo link iz prvog emaila, primećujemo da taj link više nije validan. Iz ovoga zaključujemo da sistem čuva samo jednu adresu na čekanju i da svaki novi zahtev prepisuje prethodnu, umesto da ih nadovezuje. Ovo ukazuje na potencijalnu koliziju.
+
+Da bi potvrdili sumnju, šaljemo `POST /my-account/change-email` zahtev u Repeater i pravimo 19 duplikata, svaki sa jedinstvenom email adresom. Grupe zahteva šaljemo sekvencijalno kroz odvojene konekcije i primećujemo da smo dobili po jedan email potvrde za svaki zahtev, što je očekivano ponašanje.
+
+Ponavljamo slanje iste grupe zahteva, ali ovaj put paralelno. Analizom primljenih emailova primećujemo da se adresa primaoca ne poklapa uvek sa adresom koja je bila navedena u odgovarajućem zahtevu. Zaključujemo da postoji prozor trke između trenutka kada sistem pokreće zadatak slanja emaila i trenutka kada dohvata adresu na čekanju iz baze radi formiranja email poruke. Ako paralelni zahtev u tom prozoru promeni adresu u bazi, email se šalje na pogrešnu adresu.
+
+Za dokazivanje koncepta, pravimo novu grupu od dva `POST /my-account/change-email` zahteva. U jednom postavljamo adresu kojoj imamo pristup, a u drugom adresu administratora koji ima privedeni poziv (`carlos@ginandjuice.shop`). Zahteve šaljemo paralelno i proveravamo inbox. Ako u telu primljenog emaila vidimo adresu administratora, klikćemo na link za potvrdu čime preuzimamo tu adresu. Ako je adresa u telu emaila naša sopstvena, ponavljamo napad. Napad može zahtevati više pokušaja. Nakon uspešne promene, na stranici naloga pojavljuje se link za administratorski panel. Pristupamo panelu i brišemo korisnika `carlos`. Zadatak je rešen.
+
+## Zadatak 5 - Plavi
+
+### *Exploiting time-sensitive vulnerabilities*
+
+Cilj ovog zadatka je iskoristiti ranjivost u mehanizmu resetovanja lozinke koja ne potiče od klasične trke uslova, već od slabog kriptografskog dizajna - konkretno, od upotrebe vremenskog žiga kao ulaza u generisanje tokena.
+
+Analizom procesa resetovanja lozinke uočavamo da svaki zahtev za reset rezultuje emailom sa linkom koji u query stringu sadrži korisničko ime i token. Slanjem više uzastopnih zahteva za reset primećujemo da svaki put dobijamo drugačiji token. Token je uvek iste dužine, što sugeriše da je reč o heš vrednosti nekog internog stanja - verovatno vremenskog žiga, brojača ili sličnog podatka.
+
+Dupliramo zahtev u Repeateru, dodajemo oba u grupu i šaljemo ih paralelno više puta. Primećujemo da i dalje postoji značajno kašnjenje između odgovora i da su tokeni u emailovima i dalje različiti. Zaključujemo da server obrađuje zahteve sekvencijalno, a ne istovremeno. Uzrok tome je kolačić sesije - server koristi PHP bekend koji podrazumevano obrađuje samo jedan zahtev po sesiji istovremeno.
+
+Da bi zaobišli ovo ograničenje, šaljemo `GET /forgot-password` bez kolačića sesije kako bi dobili novu sesiju. Iz odgovora kopiramo novi kolačić sesije i CSRF token i njima zamenjujemo odgovarajuće vrednosti u jednom od dva `POST /forgot-password` zahteva. Na taj način imamo par zahteva za reset koji potiču iz dve različite sesije.
+
+Ponovo šaljemo oba zahteva paralelno više puta i primećujemo da su vremena obrade sada znatno bliža, a ponekad i identična. Kada su vremena obrade identična, proveravamo inbox i uočavamo da oba emaila sadrže isti token. Ovo potvrđuje da je vremenski žig ulaz u heš funkciju koja generiše token.
+
+Pored toga, primetimo da zahtev sadrži i poseban parametar `username`. Ovo sugeriše da korisničko ime možda nije deo ulaza u heš, što bi značilo da dva korisnika mogu dobiti isti token ako im se zahtevi obrade u istom trenutku.
+
+U Repeateru, u jednom od zahteva menjamo `username` parametar na `carlos`, a drugi ostavljamo sa sopstvenim korisničkim imenom. Šaljemo oba zahteva paralelno i proveravamo inbox. Ovaj put smo primili samo jedan email - zaključujemo da je drugi email sa istim tokenom otišao korisniku `carlos`. Kopiramo link iz primljenog emaila, menjamo vrednost `username` parametra u query stringu na `carlos` i otvaramo ga u pretraživaču. Stranica za postavljanje nove lozinke prikazuje se normalno. Postavljamo novu lozinku i prijavljujemo se kao `carlos`. Ako prijava ne uspe, ponavljamo napad. Nakon uspešne prijave, pristupamo administratorskom panelu i brišemo korisnika `carlos`. Zadatak je rešen.
