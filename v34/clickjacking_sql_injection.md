@@ -168,7 +168,7 @@ SELECT * FROM users WHERE username = 'administrator'--' AND password = 'test123'
 ```
 Sve iza `--` je komentar, pa se provera lozinke preskače. Aplikacija pronađe korisnika `administrator` i prijavi ga bez provere lozinke.
 
-![View exploit stranica](images/sql_form.png)
+![View exploit stranica](screenshots/clickjack_sql/sql_form.png)
 
 
 **Plavi (Practitioner):**
@@ -261,7 +261,7 @@ Pronađene kolone: `username_ieaitb` i `password_uuifsz`
 https://0a010015036dd04c845100f200d3005c.web-security-academy.net/filter?category=%27+UNION+SELECT+username_ieaitb,+password_uuifsz+FROM+users_brcswn--
 ```
 Na stranici se pojavljuju korisnici sa lozinkama. Pronađena lozinka za `administrator` i korišćena za login kroz "My account".
-![View exploit stranica](images/sql_injection_attack.png)
+![View exploit stranica](screenshots/clickjack_sql/sql_injection_attack.png)
 
 *Screenshot prikazuje pristup bazi podataka sa prikazanim username i lozinkama
 
@@ -453,7 +453,7 @@ URL parametar `?name=<img src=1 onerror=print()>` ubacuje XSS payload u polje za
 
 **Razlika u odnosu na prethodne labove:** Ovde se može testirati exploit na sebi jer nema opasnosti od brisanja naloga ili promene email adrese — klik na "Test me" otvara print dijalog kao potvrda da exploit radi.
 
-![View exploit stranica](images/DOM_based_XSS.png)
+![View exploit stranica](screenshots/clickjack_sql/DOM_based_XSS.png)
 
 *Screenshot prikazuje poluvidljivi iframe sa feedback formom i "Click me" element pozicioniran tačno iznad "Submit feedback" dugmeta.*
 
