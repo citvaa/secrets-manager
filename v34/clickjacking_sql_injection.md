@@ -7,7 +7,7 @@
 
 ### Opis napada
 
-SQL injection je napad u kome napadač ubacuje maliciozni SQL kod kroz korisnički unos koji aplikacija direktno ugrađuje u SQL upit. Ako aplikacija ne validira i ne sanitizuje unos, baza podataka izvršava napadačev kod kao da je deo legitimnog upita.
+SQL injection je napad u kome napadač ubacuje SQL kod kroz korisnički unos koji aplikacija direktno ugrađuje u SQL upit. Ako aplikacija ne validira i ne proverava unos, baza podataka izvršava napadačev kod kao da je deo legitimnog upita.
 
 Primer - aplikacija pravi ovakav upit:
 ```sql
@@ -23,7 +23,7 @@ Postoji više varijanti SQL injekcije:
 - **In-band** - rezultat se vidi direktno u odgovoru aplikacije (najčešća)
 - **Blind boolean-based** - aplikacija ne vraća podatke, ali napadač može da zaključuje na osnovu toga da li odgovor menja ponašanje (npr. stranica se učitava ili ne)
 - **Blind time-based** - napadač ubacuje `SLEEP()` komande i meri vreme odgovora
-- **Out-of-band** - podaci se eksfiltruju kroz DNS ili HTTP zahteve ka napadačevom serveru
+- **Out-of-band** - podaci se provuku kroz DNS ili HTTP zahteve ka napadačevom serveru
 
 ### Uticaj
 
@@ -32,11 +32,10 @@ SQL injection može imati katastrofalne posledice:
 - Zaobilaženje autentikacije (login bez lozinke)
 - Izmena ili brisanje podataka
 - U nekim konfiguracijama izvršavanje OS komandi na serveru (`xp_cmdshell` na MSSQL)
-- Eksfiltracija podataka iz drugih tabela kroz `UNION` napade
 
 ### Ranjivosti koje omogućavaju napad
 
-- Direktna konkatenacija korisničkog unosa u SQL upit
+- Direktna poveznica korisničkog unosa u SQL upit
 - Nedovoljna ili nepostojeća validacija unosa
 - Prevelike privilegije DB naloga koji aplikacija koristi
 - Verbose greške koje otkrivaju strukturu baze (nazive tabela, kolona, tip baze)
@@ -494,6 +493,5 @@ URL parametar `?name=<img src=1 onerror=print()>` ubacuje XSS payload u polje za
 
 Dva div elementa su pozicionirana nezavisno. `firstClick` (`top: 500px`, `left: 50px`) je iznad "Delete account" dugmeta. `secondClick` (`top: 305px`, `left: 200px`) je iznad "Yes" dugmeta na confirmation dialogu koji se pojavljuje nakon prvog klika.
 
-**Testiranje:** Za razliku od ostalih labova, testiranje zahteva dva koraka — klikni "Test me first" da se otvori confirmation dialog, pa tek onda provjeri da li je "Test me next" iznad "Yes" dugmeta.
 
-Za clickjacking labove nije potreban Burp Suite - dovoljno je pisati HTML/CSS direktno u exploit serveru koji ti lab daje. Ključna stvar je precizno pozicioniranje iframe-a i lažnih elemenata pomoću `position: absolute` i podešavanjem `top`, `left` vrednosti, kao i podešavanje `opacity` iframe-a na vrednost blizu 0 (npr. `0.1` dok testiraš da vidiš gde je, pa na `0.0001` za finalno rešenje).
+Za clickjacking labove nije potreban Burp Suite - dovoljno je pisati HTML/CSS direktno u exploit serveru koji lab daje. Ključna stvar je precizno pozicioniranje iframe-a i lažnih elemenata pomoću `position: absolute` i podešavanjem `top`, `left` vrednosti, kao i podešavanje `opacity` iframe-a na vrednost blizu 0 (npr. `0.1` dok testiraš da vidiš gde je, pa na `0.0001` za finalno rešenje).
