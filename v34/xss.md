@@ -35,7 +35,9 @@ Cilj ovog zadatka je izvršiti DOM-baziran XSS napad koji poziva `alert` funkcij
 
 Unosom nasumičnog stringa u polje za pretragu i inspekcijom DOM-a primećujemo da se uneta vrednost upisuje direktno unutar `src` atributa `<img>` taga, bez ikakve sanacije. Radi se o `document.write` funkciji koja kao izvor koristi `location.search` - deo URL-a koji korisnik može direktno kontrolisati.
 
-Kako se vrednost umeće unutar navodnika atributa, možemo je "probiti" zatvaranjem navodnika i `src` atributa, pa zatim ubaciti sopstveni HTML tag sa JavaScript payloadom. Pretraživanjem sledećeg niza zadatak je rešen:
+![](screenshots/xss/t1-1.png)
+
+Kako se vrednost umeće unutar navodnika atributa, možemo je "probiti" zatvaranjem navodnika i `src` atributa, pa zatim ubaciti sopstveni HTML tag sa JavaScript payloadom. Pretražuje se sledeci tekst:
 
 ```html
 "><svg onload=alert(1)>
@@ -51,7 +53,9 @@ Cilj ovog zadatka je izvršiti DOM-baziran XSS napad koji probija `select` eleme
 
 Analizom JavaScript koda na stranici proizvoda uočavamo da se `storeId` parametar iz `location.search` koristi u `document.write` pozivu koji dinamički generiše `<option>` elemente unutar `<select>` padajuće liste. Dodavanjem nasumičnog niza kao vrednosti `storeId` parametra u URL i inspekcijom DOM-a potvrđujemo da se ta vrednost direktno upisuje u `<select>` element bez sanacije.
 
-Kako se vrednost umeće unutar `<select>` taga, možemo "probiti" tu strukturu zatvaranjem `<select>` elementa i ubacivanjem sopstvenog HTML taga sa JavaScript payloadom. Modifikovanjem URL-a na sledeći način zadatak je rešen:
+![](screenshots/xss/t2-1.png)
+
+Kako se vrednost umeće unutar `<select>` taga, možemo "probiti" tu strukturu zatvaranjem `<select>` elementa i ubacivanjem sopstvenog HTML taga sa JavaScript payloadom. Modifikujemo URL-a na sledeći način:
 
 ```
 product?productId=1&storeId="></select><img%20src=1%20onerror=alert(1)>
@@ -67,7 +71,9 @@ Cilj ovog zadatka je izvršiti DOM-baziran XSS napad kroz AngularJS izraz u funk
 
 Unosom nasumičnog niza u polje za pretragu i pregledom izvornog koda stranice primećujemo da se uneta vrednost nalazi unutar HTML elementa koji sadrži `ng-app` direktivu. Ovo znači da AngularJS obrađuje sadržaj tog elementa i da se JavaScript izrazi unutar dvostrukih vitičastih zagrada `{{ }}` evaluiraju. Pošto su uglaste zagrade i navodnici enkodirani, klasičan XSS payload sa `<script>` tagom ili HTML atributima neće raditi.
 
-Umesto toga, možemo iskoristiti sam AngularJS za izvršavanje proizvoljnog JavaScripta. Pristupamo `$on.constructor` koji vraća referencu na `Function` konstruktor, što nam omogućava da kreiramo i odmah pozovemo novu funkciju sa proizvoljnim kodom. Unosom sledećeg izraza u polje za pretragu zadatak je rešen:
+![](screenshots/xss/t3-1.png)
+
+Umesto toga, možemo iskoristiti sam AngularJS za izvršavanje proizvoljnog JavaScripta. Pristupamo `$on.constructor` koji vraća referencu na `Function` konstruktor, što nam omogućava da kreiramo i odmah pozovemo novu funkciju sa proizvoljnim kodom. Unosi se sledeći izraz u polje za pretragu:
 
 ```
 {{$on.constructor('alert(1)')()}}
@@ -83,7 +89,7 @@ Cilj ovog zadatka je iskoristiti skladištenu DOM XSS ranjivost u funkcionalnost
 
 Sajt pokušava da spreči XSS enkodiranjem uglastih zagrada koristeći JavaScript `replace()` funkciju. Međutim, kada se `replace()` poziva sa string argumentom umesto regularnog izraza, zamenjuje samo **prvo** pojavljivanje traženog niza. Ovo možemo iskoristiti tako što na početak payloada dodamo "lažni" par uglastih zagrada koji će biti enkodiran umesto onih iz stvarnog payloada, čime svaki naredni par ostaje netaknut i biva renderovan kao HTML.
 
-Postavljanjem sledećeg komentara zadatak je rešen:
+Postavlja se sledeći komentar:
 
 ```
 <><img src=1 onerror=alert(1)>
