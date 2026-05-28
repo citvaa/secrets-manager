@@ -3,7 +3,6 @@
 # kernel_check.sh
 # ---------------
 # Modul za pregled (review) Linux sistema, deo: KERNEL.
-# Inspirisan LinPEAS alatom, ali sa ogranicenim obimom.
 #
 # Cilj: edukativan i defanzivan. Skripta SAMO prikuplja i izvestava
 # informacije koristeci postojece sistemske komande (LOTL pristup).
