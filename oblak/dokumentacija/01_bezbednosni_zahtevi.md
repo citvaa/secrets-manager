@@ -1,9 +1,7 @@
 # Oblak - Analiza sistema i bezbednosni zahtevi
 
 Deo dokumentacije člana 1. Pokriva analizu celog sistema i posebno izvršavanje
-korisničkog koda u virtuelnoj mašini (izolovanost procesa). Terminologija prati
-materijal sa vežbi (analiza imovine, CIA ciljevi, površina napada, granice
-poverenja) i predavanja (inženjerstvo bezbednosnih zahteva, osnovni principi).
+korisničkog koda u virtuelnoj mašini (izolovanost procesa).
 
 ## 1. Opis i namena sistema
 
@@ -27,7 +25,7 @@ Glavne komponente:
 
 ## 2. Klase napadača (threat actors)
 
-Prema pristupu sa vežbi, ne zahtevaju svi delovi sistema isti nivo zaštite. Klase
+Ne zahtevaju svi delovi sistema isti nivo zaštite. Klase
 napadača za Oblak:
 
 1. Maliciozni korisnik platforme (autentikovan). Ima legitiman nalog i namerno
@@ -90,22 +88,21 @@ odgovornog za primarnu implementaciju.
 - ZR-A1 Svi privilegovani endpointi servera moraju zahtevati autentikaciju. [M1]
 - ZR-A2 Lozinke se čuvaju isključivo kao heš sa salt-om, savremenim algoritmom
   (Argon2id, alternativno bcrypt, scrypt ili PBKDF2). Nikada plaintext, nikada
-  MD5 ili SHA-1 bez salt-a (pouka sa vežbi: izbeći `md5` bez salt-a). [M1]
+  MD5 ili SHA-1 bez salt-a. [M1]
 - ZR-A3 Prijava izdaje kratkoročni token (JWT, HMAC-SHA256) potpisan tajnim
   ključem, token nosi rok važenja (`exp`) i identitet korisnika. [M1]
 - ZR-A4 Token se verifikuje korišćenjem HMAC (ne obične heš funkcije) i mora se
-  odbiti ako potpis nedostaje ili ne odgovara (sprečavanje signature bypass-a iz
-  primera sa vežbi). [M1]
+  odbiti ako potpis nedostaje ili ne odgovara (sprečavanje signature bypass-a). [M1]
 - ZR-A5 Zaštita od brute-force napada: ograničenje broja pokušaja prijave
   (rate limiting ili lockout). [M1]
-- ZR-A6 (Otvorena stavka, pattern sa vežbi) Podrška za višefaktorsku
+- ZR-A6 (Otvorena stavka) Podrška za višefaktorsku
   autentikaciju (lozinka i TOTP) za administrativne naloge.
 
 ### 6.2 Autorizacija
 
 - ZR-Z1 Korisnik sme da pristupa, menja i pokreće isključivo svoje funkcije
   (provera vlasništva nad resursom na svakom pozivu), čime se sprečava
-  authorization bypass iz primera sa vežbi. [M1/M2]
+  authorization bypass. [M1/M2]
 - ZR-Z2 Javni URL funkcije mora biti teško pogodljiv (kriptografski nasumičan
   identifikator), a ne sekvencijalni ID. [M2]
 - ZR-Z3 Princip najmanje privilegije za sve servisne naloge (server, verifier,
@@ -119,8 +116,7 @@ odgovornog za primarnu implementaciju.
   uz zaštitu od path traversal i zip-slip napada (odbiti putanje sa `..` i
   apsolutne putanje). [M1]
 - ZR-V3 Nazivi i putanje fajlova se sanitizuju, korisnik ne sme da utiče na
-  putanju skladištenja izvan svog prostora (pouka: ranjivost izlistavanja
-  direktorijuma preko korisničkog imena `..`). [M1/M2]
+  putanju skladištenja izvan svog prostora. [M1/M2]
 - ZR-V4 Preneti kod se mora verifikovati (antivirus, statička i LLM analiza) pre
   pripreme i izvršavanja, a kod koji ne prođe se odbija. [M2]
 
@@ -129,11 +125,10 @@ odgovornog za primarnu implementaciju.
 - ZR-K1 Sva komunikacija CLI ka serveru i poziv URL-a mora ići preko TLS-a (HTTPS).
   [M1/infra]
 - ZR-K2 Tajne (JWT ključ, DB kredencijali) se ne smeju nalaziti u izvornom kodu,
-  već se injektuju kroz promenljive okruženja ili konfiguracione fajlove (pouka sa
-  vežbi: hardcoded secrets). [M1]
+  već se injektuju kroz promenljive okruženja ili konfiguracione fajlove. [M1]
 - ZR-K3 Lokalni kredencijali CLI klijenta čuvaju se u fajlu sa restriktivnim
   dozvolama (`0600`). [M1]
-- ZR-K4 (Pattern sa vežbi) Ako se tajne čuvaju radi kasnijeg čitanja, koristi se
+- ZR-K4 Ako se tajne čuvaju radi kasnijeg čitanja, koristi se
   enkripcija sa ključem izvedenim iz master lozinke (PBKDF2 ili Argon2, pa AES-GCM).
 
 ### 6.5 Revizija i neporecivost (auditing, non-repudiation)
@@ -174,7 +169,7 @@ zahtevi definišu ovde radi celovitosti.
 - ZI-6 Efemernost. VM se uništava nakon izvršavanja, bez perzistencije stanja
   između poziva (sprečava ostavljanje backdoor-a i curenje podataka).
 - ZI-7 Neprivilegovano izvršavanje. VMM i orchestrator ne smeju raditi kao `root`,
-  princip najmanje privilegije (pouka secure deployment vežbe).
+  princip najmanje privilegije.
 - ZI-8 Logovanje izvršavanja. Svako pokretanje (ko, koja funkcija, trajanje,
   ishod) ide u audit log (povezuje se sa ZR-L1).
 

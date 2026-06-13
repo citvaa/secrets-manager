@@ -1,8 +1,8 @@
 # Oblak - Model pretnji i STRIDE analiza
 
-Deo dokumentacije člana 1. Metodologija prati vežbe: dijagram toka podataka (DFD)
-sa granicama poverenja, zatim identifikacija pretnji po STRIDE, pa ublažavanja
-(mitigations). Nadovezuje se na `01_bezbednosni_zahtevi.md`.
+Deo dokumentacije člana 1. Metodologija: dijagram toka podataka (DFD) sa granicama
+poverenja, zatim identifikacija pretnji po STRIDE, pa ublažavanja (mitigations).
+Nadovezuje se na `01_bezbednosni_zahtevi.md`.
 
 ## 1. Dijagram toka podataka (DFD)
 
