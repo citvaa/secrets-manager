@@ -44,6 +44,9 @@ class FunctionInfo(BaseModel):
     status: str
     code_sha256: str
     created_at: dt.datetime
+    # Member 2 additions (nullable until the pipeline reaches READY)
+    invoke_token: str | None = None
+    verification_detail: str | None = None
 
 
 class UploadResponse(BaseModel):
@@ -51,3 +54,22 @@ class UploadResponse(BaseModel):
     status: str
     code_sha256: str
     message: str
+
+
+class VerifyResponse(BaseModel):
+    name: str
+    status: str
+    message: str
+    invoke_url: str | None = None
+    llm_suspicion: str | None = None
+
+
+class FunctionDetail(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    name: str
+    status: str
+    code_sha256: str
+    created_at: dt.datetime
+    invoke_token: str | None = None
+    verification_detail: str | None = None
