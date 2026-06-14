@@ -10,9 +10,10 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+from fastapi.security import HTTPBearer
 
 from .database import init_db
-from .routers import auth, functions
+from .routers import auth, functions, verification
 
 
 @asynccontextmanager
@@ -23,7 +24,33 @@ async def lifespan(app: FastAPI):
     yield
 
 
+from fastapi.openapi.utils import get_openapi
+
 app = FastAPI(title="Oblak", version="0.1.0", lifespan=lifespan)
+
+
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+    schema = get_openapi(
+        title="Oblak",
+        version="0.1.0",
+        routes=app.routes,
+    )
+    schema["components"]["securitySchemes"] = {
+        "BearerAuth": {
+            "type": "http",
+            "scheme": "bearer",
+        }
+    }
+    for path in schema["paths"].values():
+        for method in path.values():
+            method["security"] = [{"BearerAuth": []}]
+    app.openapi_schema = schema
+    return schema
+
+
+app.openapi = custom_openapi
 
 
 @app.middleware("http")
@@ -53,3 +80,4 @@ def health() -> dict:
 
 app.include_router(auth.router)
 app.include_router(functions.router)
+app.include_router(verification.router)

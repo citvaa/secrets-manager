@@ -68,6 +68,11 @@ class Function(Base):
     )
     created_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
 
+    # --- Member 2
+    artifact_path: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    invoke_token: Mapped[str | None] = mapped_column(String(64), unique=True, nullable=True)
+    verification_detail: Mapped[str | None] = mapped_column(Text, nullable=True)
+
     owner: Mapped["User"] = relationship(back_populates="functions")
 
 

@@ -58,6 +58,16 @@ class OblakClient:
             )
         return self._handle(resp)
 
+    def verify(self, name: str) -> dict:
+        # Verification runs antivirus, static analysis, an LLM call and a pip
+        # install, so it can take a while; use a generous timeout.
+        with httpx.Client(timeout=180.0) as client:
+            resp = client.post(
+                f"{self._base}/functions/{name}/verify",
+                headers=self._headers(),
+            )
+        return self._handle(resp)
+
     def list_functions(self) -> list:
         with httpx.Client(timeout=self._timeout) as client:
             resp = client.get(f"{self._base}/functions", headers=self._headers())

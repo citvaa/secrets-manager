@@ -5,7 +5,8 @@ Commands:
     cdk register                 Create an account.
     cdk login                    Authenticate; stores a bearer token locally (0600).
     cdk logout                   Forget the local token.
-    cdk deploy PATH --name NAME  Package a directory and upload it.
+    cdk deploy PATH --name NAME  Package a directory, upload it and verify it.
+    cdk verify --name NAME       (Re-)run verification for an uploaded function.
     cdk list                     List your deployed functions.
     cdk whoami                   Show current configuration.
 
@@ -97,8 +98,11 @@ def logout() -> None:
 def deploy(
     path: str = typer.Argument(..., help="Directory containing the function code."),
     name: str = typer.Option(..., "--name", "-n", help="Function name."),
+    no_verify: bool = typer.Option(
+        False, "--no-verify", help="Upload only; do not run verification automatically."
+    ),
 ) -> None:
-    """Package a local directory (incl. requirements.txt) and upload it."""
+    """Package a local directory, upload it and automatically run verification."""
     try:
         package = build_package(path)
     except ValueError as exc:
@@ -113,8 +117,41 @@ def deploy(
         raise typer.Exit(code=1)
 
     typer.secho(
-        f"Deployed '{result['name']}' — status={result['status']} "
-        f"sha256={result['code_sha256'][:12]}…",
+        f"Uploaded '{result['name']}' (sha256={result['code_sha256'][:12]}...).",
+        fg=typer.colors.GREEN,
+    )
+
+    if no_verify:
+        typer.echo("Skipping verification (--no-verify). Run `cdk verify` later.")
+        return
+
+    typer.echo("Running verification (antivirus, static analysis, LLM, preparation)...")
+    try:
+        vr = client.verify(name)
+    except ApiError as exc:
+        # 422 = rejected by verification, 5xx = pipeline failure. Show the reason.
+        typer.secho(f"Verification failed: {exc}", fg=typer.colors.RED)
+        raise typer.Exit(code=2)
+
+    typer.secho(
+        f"Ready: '{vr['name']}' verified. Invoke URL: {vr['invoke_url']}",
+        fg=typer.colors.GREEN,
+    )
+
+
+@app.command()
+def verify(
+    name: str = typer.Option(..., "--name", "-n", help="Function name to (re-)verify."),
+) -> None:
+    """Run the verification and preparation pipeline for an uploaded function."""
+    client = _client(require_auth=True)
+    try:
+        vr = client.verify(name)
+    except ApiError as exc:
+        typer.secho(f"Verification failed: {exc}", fg=typer.colors.RED)
+        raise typer.Exit(code=2)
+    typer.secho(
+        f"Ready: '{vr['name']}' verified. Invoke URL: {vr['invoke_url']}",
         fg=typer.colors.GREEN,
     )
 
@@ -133,7 +170,7 @@ def list_functions() -> None:
         typer.echo("No functions deployed yet.")
         return
     for it in items:
-        typer.echo(f"- {it['name']:20s} {it['status']:10s} {it['code_sha256'][:12]}…")
+        typer.echo(f"- {it['name']:20s} {it['status']:10s} {it['code_sha256'][:12]}...")
 
 
 @app.command()
