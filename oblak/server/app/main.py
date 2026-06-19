@@ -12,15 +12,29 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPBearer
 
+from .config import settings
 from .database import init_db
 from .routers import auth, functions, verification
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # For the project it's fine to create tables on startup; production would use
-    # migrations / seed.sql (see server/seed.sql).
     init_db()
+    from orchestrator import Orchestrator
+    from orchestrator.config import OrchestratorConfig
+    cfg = OrchestratorConfig(
+        firecracker_bin=settings.firecracker_bin,
+        jailer_bin=settings.jailer_bin,
+        kernel_path=settings.kernel_path,
+        rootfs_path=settings.rootfs_path,
+        vm_vcpus=settings.vm_vcpus,
+        vm_mem_mib=settings.vm_mem_mib,
+        vm_timeout_seconds=settings.vm_timeout_seconds,
+        vm_network_enabled=settings.vm_network_enabled,
+        jailer_uid=settings.jailer_uid,
+        jailer_gid=settings.jailer_gid,
+    )
+    app.state.orchestrator = Orchestrator(cfg)
     yield
 
 

@@ -23,7 +23,7 @@ from .. import audit, code_verifier, preparation, storage
 from ..database import get_db
 from ..deps import get_client_ip, get_current_user, get_request_id
 from ..models import Function, FunctionStatus, User
-from ..schemas import FunctionDetail, VerifyResponse
+from ..schemas import FunctionDetail, InvokeResponse, VerifyResponse
 from ..storage import StorageIntegrityError
 
 router = APIRouter(tags=["verification"])
@@ -202,15 +202,16 @@ def get_function(
     return fn
 
 
-# ---------------------------------------------------------------------------
-# GET /invoke/{token} — placeholder for Member 3
-# ---------------------------------------------------------------------------
-
 @router.get(
     "/invoke/{token}",
-    summary="Invoke a deployed function (Member 3 wires in Firecracker here).",
+    response_model=InvokeResponse,
+    summary="Invoke a deployed function in an isolated execution environment.",
 )
-def invoke_function(token: str, db: Session = Depends(get_db)) -> dict:
+def invoke_function(
+    token: str,
+    request: Request,
+    db: Session = Depends(get_db),
+) -> InvokeResponse:
     fn: Function | None = (
         db.query(Function).filter(Function.invoke_token == token).first()
     )
@@ -221,8 +222,42 @@ def invoke_function(token: str, db: Session = Depends(get_db)) -> dict:
             status_code=503,
             detail=f"Function is not ready (status={fn.status.value})",
         )
-    # Member 3 replaces this body with the Firecracker orchestrator call.
-    raise HTTPException(
-        status_code=503,
-        detail="Execution engine not yet connected (Member 3 open item).",
+
+    rid = get_request_id(request)
+    ip = get_client_ip(request)
+    resource_name = f"function:{fn.name}"
+
+    if not hasattr(request.app.state, "orchestrator"):
+        from orchestrator import Orchestrator
+        request.app.state.orchestrator = Orchestrator()
+    orchestrator = request.app.state.orchestrator
+    try:
+        result = orchestrator.execute(fn.artifact_path)
+    except Exception as exc:
+        audit.record(
+            db, action="invoke", outcome="FAILURE",
+            actor="<anonymous>", resource=resource_name,
+            request_id=rid, client_ip=ip,
+            detail={"error": str(exc)},
+        )
+        raise HTTPException(status_code=500, detail="Execution failed")
+
+    audit.record(
+        db, action="invoke", outcome="SUCCESS",
+        actor="<anonymous>", resource=resource_name,
+        request_id=rid, client_ip=ip,
+        detail={
+            "return_code": result.return_code,
+            "duration_ms": result.duration_ms,
+            "mode": result.execution_mode,
+        },
+    )
+
+    return InvokeResponse(
+        stdout=result.stdout,
+        stderr=result.stderr,
+        return_value=result.return_value,
+        return_code=result.return_code,
+        duration_ms=result.duration_ms,
+        execution_mode=result.execution_mode,
     )

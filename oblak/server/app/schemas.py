@@ -73,3 +73,12 @@ class FunctionDetail(BaseModel):
     created_at: dt.datetime
     invoke_token: str | None = None
     verification_detail: str | None = None
+
+
+class InvokeResponse(BaseModel):
+    stdout: str
+    stderr: str
+    return_value: str | None
+    return_code: int
+    duration_ms: float
+    execution_mode: str  # "microvm" | "subprocess"
