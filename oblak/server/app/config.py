@@ -41,6 +41,18 @@ class Settings(BaseSettings):
     login_max_attempts: int = 5
     login_window_seconds: int = 300
 
+    # --- Execution / Firecracker ---
+    firecracker_bin: str = "/usr/local/bin/firecracker"
+    jailer_bin: str = "/usr/local/bin/jailer"
+    kernel_path: str = "/var/lib/oblak/vmlinux"
+    rootfs_path: str = "/var/lib/oblak/rootfs.ext4"
+    vm_vcpus: int = 1
+    vm_mem_mib: int = 128
+    vm_timeout_seconds: int = 30
+    vm_network_enabled: bool = False
+    jailer_uid: int = 65533
+    jailer_gid: int = 65533
+
     def ensure_secret(self) -> None:
         """Fail-safe for the JWT secret.
 
