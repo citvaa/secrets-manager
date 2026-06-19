@@ -1,0 +1,322 @@
+Run started:2026-06-19 16:01:01.858242
+
+Test results:
+>> Issue: [B404:blacklist] Consider possible security implications associated with the subprocess module.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.0/blacklists/blacklist_imports.html#b404-import-subprocess
+   Location: microvm/agent.py:18:0
+17	import socket
+18	import subprocess
+19	import sys
+
+--------------------------------------------------
+>> Issue: [B607:start_process_with_partial_path] Starting a process with a partial executable path
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.0/plugins/b607_start_process_with_partial_path.html
+   Location: microvm/agent.py:29:4
+28	    os.makedirs(MOUNT_POINT, exist_ok=True)
+29	    subprocess.run(
+30	        ["mount", "-o", "ro", CODE_DRIVE, MOUNT_POINT],
+31	        check=True,
+32	    )
+33	
+
+--------------------------------------------------
+>> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.0/plugins/b603_subprocess_without_shell_equals_true.html
+   Location: microvm/agent.py:29:4
+28	    os.makedirs(MOUNT_POINT, exist_ok=True)
+29	    subprocess.run(
+30	        ["mount", "-o", "ro", CODE_DRIVE, MOUNT_POINT],
+31	        check=True,
+32	    )
+33	
+
+--------------------------------------------------
+>> Issue: [B605:start_process_with_a_shell] Starting a process with a shell: Seems safe, but may be changed in the future, consider rewriting without shell
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.0/plugins/b605_start_process_with_a_shell.html
+   Location: microvm/agent.py:46:8
+45	        sys.stderr.write(f"mount failed: {exc}\n")
+46	        os.system("reboot -f")
+47	        return
+
+--------------------------------------------------
+>> Issue: [B607:start_process_with_partial_path] Starting a process with a partial executable path
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.0/plugins/b607_start_process_with_partial_path.html
+   Location: microvm/agent.py:46:8
+45	        sys.stderr.write(f"mount failed: {exc}\n")
+46	        os.system("reboot -f")
+47	        return
+
+--------------------------------------------------
+>> Issue: [B605:start_process_with_a_shell] Starting a process with a shell: Seems safe, but may be changed in the future, consider rewriting without shell
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.0/plugins/b605_start_process_with_a_shell.html
+   Location: microvm/agent.py:69:4
+68	
+69	    os.system("reboot -f")
+70	
+
+--------------------------------------------------
+>> Issue: [B607:start_process_with_partial_path] Starting a process with a partial executable path
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.0/plugins/b607_start_process_with_partial_path.html
+   Location: microvm/agent.py:69:4
+68	
+69	    os.system("reboot -f")
+70	
+
+--------------------------------------------------
+>> Issue: [B404:blacklist] Consider possible security implications associated with the subprocess module.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.0/blacklists/blacklist_imports.html#b404-import-subprocess
+   Location: orchestrator/orchestrator.py:7:0
+6	import socket
+7	import subprocess
+8	import time
+
+--------------------------------------------------
+>> Issue: [B110:try_except_pass] Try, Except, Pass detected.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.0/plugins/b110_try_except_pass.html
+   Location: orchestrator/orchestrator.py:77:12
+76	                fc_proc.wait(timeout=5)
+77	            except Exception:
+78	                pass
+79	            self._cleanup_vm(vm_id)
+
+--------------------------------------------------
+>> Issue: [B607:start_process_with_partial_path] Starting a process with a partial executable path
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.0/plugins/b607_start_process_with_partial_path.html
+   Location: orchestrator/orchestrator.py:98:8
+97	        size_kb = max(65536, _dir_size_kb(artifact_path) * 3)
+98	        subprocess.run(
+99	            ["genext2fs", "-b", str(size_kb), "-d", artifact_path, code_drive],
+100	            check=True,
+101	            capture_output=True,
+102	        )
+103	
+
+--------------------------------------------------
+>> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.0/plugins/b603_subprocess_without_shell_equals_true.html
+   Location: orchestrator/orchestrator.py:98:8
+97	        size_kb = max(65536, _dir_size_kb(artifact_path) * 3)
+98	        subprocess.run(
+99	            ["genext2fs", "-b", str(size_kb), "-d", artifact_path, code_drive],
+100	            check=True,
+101	            capture_output=True,
+102	        )
+103	
+
+--------------------------------------------------
+>> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.0/plugins/b603_subprocess_without_shell_equals_true.html
+   Location: orchestrator/orchestrator.py:113:15
+112	        )
+113	        return subprocess.Popen(args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+114	
+
+--------------------------------------------------
+>> Issue: [B607:start_process_with_partial_path] Starting a process with a partial executable path
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.0/plugins/b607_start_process_with_partial_path.html
+   Location: orchestrator/orchestrator.py:180:8
+179	    def _cleanup_vm(self, vm_id: str) -> None:
+180	        subprocess.run(
+181	            ["sudo", "/usr/local/bin/oblak-cleanup", f"{_CHROOT_BASE}/firecracker/{vm_id}"],
+182	            check=False,
+183	        )
+184	
+
+--------------------------------------------------
+>> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.0/plugins/b603_subprocess_without_shell_equals_true.html
+   Location: orchestrator/orchestrator.py:180:8
+179	    def _cleanup_vm(self, vm_id: str) -> None:
+180	        subprocess.run(
+181	            ["sudo", "/usr/local/bin/oblak-cleanup", f"{_CHROOT_BASE}/firecracker/{vm_id}"],
+182	            check=False,
+183	        )
+184	
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.0/plugins/b101_assert_used.html
+   Location: tests/benigni/test_benign.py:40:12
+39	            result = orchestrator.execute(art, event={"name": "Oblak"})
+40	            assert result.return_code == 0
+41	            assert result.execution_mode == "microvm"
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.0/plugins/b101_assert_used.html
+   Location: tests/benigni/test_benign.py:41:12
+40	            assert result.return_code == 0
+41	            assert result.execution_mode == "microvm"
+42	            payload = json.loads(result.return_value)
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.0/plugins/b101_assert_used.html
+   Location: tests/benigni/test_benign.py:43:12
+42	            payload = json.loads(result.return_value)
+43	            assert payload["message"] == "Zdravo, Oblak!"
+44	        finally:
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.0/plugins/b101_assert_used.html
+   Location: tests/benigni/test_benign.py:51:12
+50	            result = orchestrator.execute(art, event={})
+51	            assert result.return_code == 0
+52	            payload = json.loads(result.return_value)
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.0/plugins/b101_assert_used.html
+   Location: tests/benigni/test_benign.py:53:12
+52	            payload = json.loads(result.return_value)
+53	            assert "message" in payload
+54	        finally:
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.0/plugins/b101_assert_used.html
+   Location: tests/benigni/test_benign.py:63:12
+62	            result = orchestrator.execute(art, event={"a": 3, "b": 4})
+63	            assert result.return_code == 0
+64	            payload = json.loads(result.return_value)
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.0/plugins/b101_assert_used.html
+   Location: tests/benigni/test_benign.py:65:12
+64	            payload = json.loads(result.return_value)
+65	            assert payload["sum"] == 7
+66	            assert payload["product"] == 12
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.0/plugins/b101_assert_used.html
+   Location: tests/benigni/test_benign.py:66:12
+65	            assert payload["sum"] == 7
+66	            assert payload["product"] == 12
+67	        finally:
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.0/plugins/b101_assert_used.html
+   Location: tests/maliciozni/test_malicious.py:51:12
+50	            result = orchestrator.execute(art)
+51	            assert result.return_code != 0, (
+52	                f"Fork bomb should have failed; got rc={result.return_code}, "
+53	                f"stderr={result.stderr!r}"
+54	            )
+55	        finally:
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.0/plugins/b101_assert_used.html
+   Location: tests/maliciozni/test_malicious.py:65:12
+64	            result = orchestrator.execute(art)
+65	            assert result.return_code != 0, "Network exfil should fail with no NIC"
+66	        finally:
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.0/plugins/b101_assert_used.html
+   Location: tests/maliciozni/test_malicious.py:79:20
+78	                for path, content in payload.items():
+79	                    assert "blocked" in str(content), (
+80	                        f"Host file {path} was readable inside MicroVM: {content!r}"
+81	                    )
+82	        finally:
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.0/plugins/b101_assert_used.html
+   Location: tests/maliciozni/test_malicious.py:92:12
+91	            result = orchestrator.execute(art)
+92	            assert result.return_code != 0, (
+93	                f"Memory bomb should have failed; got rc={result.return_code}, "
+94	                f"stderr={result.stderr!r}"
+95	            )
+96	        finally:
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.0/plugins/b101_assert_used.html
+   Location: tests/maliciozni/test_malicious.py:106:12
+105	            result = orchestrator.execute(art)
+106	            assert result.return_code != 0, (
+107	                f"CPU hog should have been killed; got rc={result.return_code}"
+108	            )
+109	        finally:
+
+--------------------------------------------------
+
+Code scanned:
+	Total lines of code: 555
+	Total lines skipped (#nosec): 0
+	Total potential issues skipped due to specifically being disabled (e.g., #nosec BXXX): 1
+
+Run metrics:
+	Total issues (by severity):
+		Undefined: 0
+		Low: 27
+		Medium: 0
+		High: 0
+	Total issues (by confidence):
+		Undefined: 0
+		Low: 0
+		Medium: 0
+		High: 27
+Files skipped (0):
