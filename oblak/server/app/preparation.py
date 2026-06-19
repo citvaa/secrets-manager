@@ -36,15 +36,11 @@ _PREP_TIMEOUT = int(os.getenv("OBLAK_PREP_TIMEOUT_SECONDS", "120"))
 
 # Patterns that are not allowed in requirements.txt lines.
 _BLOCKED_REQ_PATTERNS: list[re.Pattern[str]] = [
-    re.compile(r"^\s*-e\s+", re.IGNORECASE),          # editable installs
     re.compile(r"git\+", re.IGNORECASE),               # VCS URLs
     re.compile(r"hg\+|svn\+|bzr\+", re.IGNORECASE),
     re.compile(r"file://", re.IGNORECASE),             # local path references
     re.compile(r"^\s*\./", re.IGNORECASE),
     re.compile(r"^\s*\.\./", re.IGNORECASE),
-    re.compile(r"--index-url", re.IGNORECASE),         # index overrides
-    re.compile(r"--extra-index-url", re.IGNORECASE),
-    re.compile(r"--find-links", re.IGNORECASE),
 ]
 
 
@@ -67,13 +63,18 @@ def _validate_requirements(req_path: str) -> list[str]:
             line = raw_line.strip()
             if not line or line.startswith("#"):
                 continue
+            if line.startswith("-"):
+                raise PreparationError(
+                    f"requirements.txt line {lineno}: flags and options are not allowed "
+                    f"({line[:80]!r}) — only plain PyPI package specifiers are accepted."
+                )
             for pattern in _BLOCKED_REQ_PATTERNS:
                 if pattern.search(line):
                     raise PreparationError(
                         f"requirements.txt line {lineno}: forbidden specifier "
                         f"({line[:80]!r}) — only plain PyPI packages are allowed."
                     )
-            if "==" not in line and not line.startswith("--"):
+            if "==" not in line:
                 logger.warning(
                     "requirements.txt line %d has no pinned version: %r "
                     "(OS-SC-1: add ==version for reproducibility)",
