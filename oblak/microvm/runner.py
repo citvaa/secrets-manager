@@ -1,13 +1,19 @@
 from __future__ import annotations
 
+import glob
 import importlib.util
 import io
 import json
+import os
 import sys
 import traceback
 
 
 def run(code_dir: str, event: dict) -> dict:
+    artifact_dir = os.path.dirname(code_dir)
+    for sp in glob.glob(os.path.join(artifact_dir, "venv", "lib", "python*", "site-packages")):
+        if sp not in sys.path:
+            sys.path.insert(0, sp)
     sys.path.insert(0, code_dir)
 
     spec = importlib.util.spec_from_file_location("user_main", f"{code_dir}/main.py")
