@@ -7,9 +7,16 @@ are read at import time.
 from __future__ import annotations
 
 import os
+import sys
 import tempfile
+from pathlib import Path
 
 import pytest
+
+# Make the top-level orchestrator/ package importable when running from server/.
+_PROJECT_ROOT = str(Path(__file__).parent.parent.parent)
+if _PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, _PROJECT_ROOT)
 
 # --- Configure an isolated environment for the whole test session ---
 _TMP = tempfile.mkdtemp(prefix="oblak_test_")

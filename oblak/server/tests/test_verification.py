@@ -148,10 +148,12 @@ def test_integrity_check_catches_tampering(client, monkeypatch):
 
 
 # ---------------------------------------------------------------------------
-# Invoke placeholder — 503 until Member 3 is connected
+# Invoke — executes the function and returns a result
 # ---------------------------------------------------------------------------
 
-def test_invoke_placeholder_returns_503(client):
+def test_invoke_executes_function(client):
+    from orchestrator.orchestrator import ExecutionResult
+
     token = _register_and_login(client, "invoke_user_v")
     pkg = _make_zip({"main.py": BENIGN_CODE})
 
@@ -165,8 +167,30 @@ def test_invoke_placeholder_returns_503(client):
     assert r.status_code == 200
     invoke_url = r.json()["invoke_url"]
 
-    r = client.get(invoke_url)
-    assert r.status_code == 503
+    fake_result = ExecutionResult(
+        stdout="",
+        stderr="",
+        return_value='{"message": "Hello, world!"}',
+        return_code=0,
+        duration_ms=1.0,
+        execution_mode="microvm",
+    )
+
+    class _FakeOrchestrator:
+        def execute(self, *args, **kwargs):
+            return fake_result
+
+    client.app.state.orchestrator = _FakeOrchestrator()
+    try:
+        r = client.get(invoke_url)
+    finally:
+        del client.app.state.orchestrator
+
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["return_code"] == 0
+    assert body["execution_mode"] == "microvm"
+    assert body["return_value"] is not None
 
 
 # ---------------------------------------------------------------------------
