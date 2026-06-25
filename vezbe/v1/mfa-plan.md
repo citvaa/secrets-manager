@@ -83,7 +83,7 @@ TOTP funkcioniše po **RFC 6238** standardu:
 
 ## 3) Najčešće greške i bezbednosni propusti u implementaciji MFA
 
-| Propust | Opis | Mitigacija |
+| Propust | Opis | Smanjenje rizika |
 |---------|------|------------|
 | **Sinhronizacija vremena** | Server i klijent imaju različito sistemsko vrijeme → kod uvijek odbijen | NTP/chrony na serveru; tolerance window ±1 korak |
 | **Replay napad** | Presretnuti TOTP kod se koristi ponovo u roku od 30s | Cache iskorišćenih kodova (Redis TTL 90s) |
